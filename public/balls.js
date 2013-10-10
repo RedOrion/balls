@@ -1,35 +1,34 @@
 (function($){
     $.fn.extend({
         balls: function(o) {
-            var balls    = this;
+            var self    = this;
 
-            var i;
-
-            balls.playerId = null;
-            balls.players = {};
-
+            self.playerId = null;
+            self.players = {};
             var defaults = {};
-
             var options = $.extend(defaults, o);
 
-            balls.displayMessage = function (msg) {
+            self.displayMessage = function (msg) {
                 $(this).html(msg);
             };
 
-            balls.addPlayer = function(player) {
-                balls.players[player.id] = player;
-                alert("Add player "+player.id);
+            $('#room').change(function() {
+                ws.send($.toJSON({"type" : "move", "direction" : "left"}));
+            });
+
+            self.addPlayer = function(player) {
+                self.players[player.id] = player;
+//                alert("Add player "+player.id);
             };
 
-            balls.getPlayer = function(id) {
+            self.getPlayer = function(id) {
                 if (id) {
-                    return balls.players[id];
+                    return self.players[id];
                 }
-
-                return balls.players[balls.playerId];
+                return self.players[self.playerId];
             };
 
-            balls.init = function() {
+            self.init = function() {
                 //console.log('init');
             };
 
@@ -39,22 +38,22 @@
                 player.id = options.id;
             }
 
-            return balls.each(function() {
+            return self.each(function() {
                 var o = options;
 
-                balls.displayMessage('Connecting...');
+                self.displayMessage('Connecting...');
 
                 // Connect to WebSocket
                 var ws = new WebSocket(o.url);
 
                 ws.onerror = function(e) {
-                    balls.displayMessage("Error: " + e);
+                    self.displayMessage("Error: " + e);
                 };
 
                 ws.onopen = function() {
-                    balls.displayMessage('Connected. Loading...');
+                    self.displayMessage('Connected. Loading...');
 
-                    balls.init();
+                    self.init();
 
                 };
 
@@ -63,24 +62,34 @@
                     var type = data.type;
 
                     //console.log('Message received');
+                    $('#debug').html(e.data);
 
                     if (type == 'new_player') {
                         //console.log('New player connected');
                         var player = new Player({
                             "id" : data.id
                         });
-                        balls.addPlayer(player);
+                        self.addPlayer(player);
                     }
                     else if (type == 'old_player') {
                         //console.log('Player disconnected');
-                        delete balls.players[data.id];
+                        delete self.players[data.id];
+                    }
+                    else if (type == 'rooms') {
+                        $('#top').html("room data = ["+data[$('#room').val()]+"]");
                     }
                 };
 
                 ws.onclose = function() {
                     $('#top').html('');
-                    balls.displayMessage('Disconnected. <a href="/">Reconnect</a>');
+                    self.displayMessage('Disconnected. <a href="/">Reconnect</a>');
                 };
+
+                $('#room').keyup(function() {
+                    $('#debug').html('room change');
+                    ws.send($.toJSON({"type" : "room", "number" : $('#room').val() }));
+                });
+
             });
         }
     });

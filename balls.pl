@@ -10,7 +10,28 @@ use Mojo::IOLoop;
 #my $ioloop = Mojo::IOLoop->singleton;
 
 my $players = {};
+my $rooms   = {};
+my $controller;
 
+
+# One second room timer
+# Once a room is created, it counts forever
+Mojo::IOLoop->recurring(1 => sub {
+    foreach my $rm (keys %$rooms) {
+        $rooms->{$rm}++;
+    }
+    if ($controller) {
+        _send_message_to_all($controller, {
+            type    => 'rooms',
+            %$rooms
+        });
+        app->log->debug('Sending to all players');
+    }
+});
+
+
+# The websocket URL
+#
 websocket '/' => sub {
     my ($self) = @_;
 
@@ -18,15 +39,17 @@ websocket '/' => sub {
     Mojo::IOLoop->stream($tx->connection)->timeout(0);
 
     app->log->debug('Player connected');
+    $controller = $self;
 
     my $cid = _id($self);
     $players->{$cid}{tx} = $tx;
     my $player = $players->{$cid};
 
     app->log->debug('Notify other players about a new player');
-    _send_message_to_others($self,
-        type    => 'new_player',
-        _player_info($self, $cid),
+    _send_message_to_others($self, {
+            type    => 'new_player',
+            _player_info($self, $cid),
+        }
     );
 
     $self->on(message =>
@@ -34,6 +57,7 @@ websocket '/' => sub {
             my ($self, $message) = @_;
 
             my $json = Mojo::JSON->new;
+            app->log->debug("Message [$message]");
 
             # Very basic checks. Just ignore errors.
             #
@@ -43,26 +67,32 @@ websocket '/' => sub {
             my $type = $message->{type};
             return unless $type;
 
-            if ($type eq 'foo') {
-                # handle command 'foo'
-                #_handle_foo($self, $message);
+            if ($type eq 'room') {
+                my $room_number = $message->{number};
+                if (not defined $rooms->{$room_number}) {
+                    $rooms->{$room_number} = 0;
+                }
             }
         }
     );
 
     $self->on( finish =>
         sub {
-            _send_message_to_others($self,
+            _send_message_to_others($self, {
                 type    => 'old_player',
                 id      => $cid,
-            );
+            });
             app->log->debug('Player disconnected');
             delete $players->{$cid};
         }
     );
 };
 
+# get the HTML
+#
 get '/' => 'index';
+
+
 
 # Get a unique ID for this user
 #
@@ -70,7 +100,7 @@ sub _id {
     my ($self) = @_;
 
     my $tx = $self->tx;
-    app->log->debug("got ID [$tx]");
+#    app->log->debug("got ID [$tx]");
 
     return "$tx";
 }
@@ -104,26 +134,27 @@ sub _message_to_json {
     my %message = @_;
 
     my $json = Mojo::JSON->new;
-    return $json->encode({%message});
+    $json = $json->encode({%message});
+    app->log->debug($json);
+    return $json;
 }
 
 # Send a message
 #
 sub _send_message {
-    my $self = shift;
+    my ($self, $msg) = @_;
 
-    $self->send(_message_to_json(@_));
+    $self->send(_message_to_json(%$msg));
 }
 
 # Send a message to everyone except oneself
 #
 sub _send_message_to_others {
-    my $self = shift;
-    my %message = @_;
+    my ($self, $msg) = @_;
 
     my $id = _id($self);
 
-    my $message = _message_to_json(%message);
+    my $message = _message_to_json(%$msg);
 
     foreach my $cid (keys %$players) {
         next if $cid eq $id;
@@ -145,10 +176,9 @@ sub _send_message_to_others {
 # Send a message to everyone, including oneself
 #
 sub _send_message_to_all {
-    my $self = shift;
-
-    _send_message_to_other(@_);
-    _send_message(@_);
+    my ($self, $msg) = @_;
+    _send_message_to_others($self, $msg);
+    _send_message($self, $msg);
 }
 
 print "Remember, you need to also run 'sudo perl mojo/examples/flash-policy-server.pl' as root for this to work...\n";
@@ -191,10 +221,13 @@ __DATA__
         <div class="container">
             <table border="0" height="100%" style="margin:auto">
                 <tr>
+                    <dt><input type="text" id="room" value="0"></td>
                     <td style="vertical-align:top"><div id="top"></div></td>
+                    <td ><div id="rooms"></div></td>
                     <td style="vertical-align:middle">
                         <div id="content"></div>
                     </td>
+                    <td><div id="debug"></div></td>
                 </tr>
             </table>
         </div>
