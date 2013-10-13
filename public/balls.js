@@ -12,10 +12,6 @@
                 $(this).html(msg);
             };
 
-            $('#room').change(function() {
-                ws.send($.toJSON({"type" : "move", "direction" : "left"}));
-            });
-
             self.addPlayer = function(player) {
                 self.players[player.id] = player;
 //                alert("Add player "+player.id);
@@ -60,18 +56,18 @@
                 ws.onmessage = function(e) {
                     var data = $.evalJSON(e.data);
                     var type = data.type;
-
+alert(e.data);
                     //console.log('Message received');
                     $('#debug').html(e.data);
 
-                    if (type == 'new_player') {
+                    if (type == 'new_client') {
                         //console.log('New player connected');
                         var player = new Player({
                             "id" : data.id
                         });
                         self.addPlayer(player);
                     }
-                    else if (type == 'old_player') {
+                    else if (type == 'old_client') {
                         //console.log('Player disconnected');
                         delete self.players[data.id];
                     }
@@ -87,7 +83,7 @@
 
                 $('#room').keyup(function() {
                     $('#debug').html('room change');
-                    ws.send($.toJSON({"type" : "room", "number" : $('#room').val() }));
+                    ws.send($.toJSON({"type" : "room", "data" : { "number" : $('#room').val() } } ));
                 });
 
             });

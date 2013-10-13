@@ -1,74 +1,88 @@
 #!/usr/bin/perl
 
 use FindBin;
-
+use lib 'lib';
 use Mojolicious::Lite;
 use Mojo::JSON;
 use Mojo::ByteStream;
 use Mojo::IOLoop;
 
-#my $ioloop = Mojo::IOLoop->singleton;
+use Client;
 
-my $players = {};
+my $ioloop  = Mojo::IOLoop->singleton;
+my $clients = {};
 my $rooms   = {};
-my $controller;
-
 
 # One second room timer
 # Once a room is created, it counts forever
-Mojo::IOLoop->recurring(1 => sub {
+$ioloop->recurring(1 => sub {
     foreach my $rm (keys %$rooms) {
         $rooms->{$rm}++;
     }
-    if ($controller) {
-        _send_message_to_all($controller, {
+    _broadcast({
+        msg => {
             type    => 'rooms',
-            %$rooms
-        });
-        app->log->debug('Sending to all players');
-    }
+            data    => $rooms,
+        }
+    });
+    app->log->debug('Sending to all players');
 });
 
 
-# The websocket URL
+# get the HTML
+#
+get '/' => 'index';
+
+
+# The websocket URL. This tells us a new client has made a connection
 #
 websocket '/' => sub {
     my ($self) = @_;
 
-    my $tx = $self->tx;
+    my $tx  = $self->tx;
+    my $cid = "$tx";
+    
     Mojo::IOLoop->stream($tx->connection)->timeout(0);
 
-    app->log->debug('Player connected');
-    $controller = $self;
+    app->log->debug('Client connected');
 
-    my $cid = _id($self);
-    $players->{$cid}{tx} = $tx;
-    my $player = $players->{$cid};
+    # Get some basic details of the client. For now just record the ID
+    #
+    my $client = Client->new({
+        tx      => $tx,
+        name    => 'foo',
+        id      => $cid,
+    });
+    $clients->{$cid} = $client;
 
-    app->log->debug('Notify other players about a new player');
-    _send_message_to_others($self, {
-            type    => 'new_player',
-            _player_info($self, $cid),
-        }
-    );
+    app->log->debug('Notify other clients about a new client');
 
+    _broadcast({
+        msg => {
+            type    => 'new_client',
+            data    => $client->as_hash,
+        }, 
+        exclude => $client,
+    });
+
+    # On receiving a message from the client
     $self->on(message =>
         sub {
-            my ($self, $message) = @_;
+            my ($self, $json_msg) = @_;
 
             my $json = Mojo::JSON->new;
-            app->log->debug("Message [$message]");
+            app->log->debug("Message [$json_msg]");
 
             # Very basic checks. Just ignore errors.
             #
-            $message = $json->decode($message);
+            my $message = $json->decode($json_msg);
             return unless $message || $json->error;
 
             my $type = $message->{type};
             return unless $type;
 
             if ($type eq 'room') {
-                my $room_number = $message->{number};
+                my $room_number = $message->{data}{number};
                 if (not defined $rooms->{$room_number}) {
                     $rooms->{$room_number} = 0;
                 }
@@ -78,107 +92,48 @@ websocket '/' => sub {
 
     $self->on( finish =>
         sub {
-            _send_message_to_others($self, {
-                type    => 'old_player',
-                id      => $cid,
+            my ($self) = @_;
+
+            _broadcast({
+                msg => {
+                    type    => 'old_client',
+                    data    => $client->as_hash,
+                },
+                exclude => $client,
             });
+            delete $clients->{$cid};
+            
             app->log->debug('Player disconnected');
-            delete $players->{$cid};
         }
     );
 };
 
-# get the HTML
-#
-get '/' => 'index';
-
-
-
-# Get a unique ID for this user
-#
-sub _id {
-    my ($self) = @_;
-
-    my $tx = $self->tx;
-#    app->log->debug("got ID [$tx]");
-
-    return "$tx";
-}
-
-# Get player info for a player
-#
-sub _player_info {
-    my ($self, $cid) = @_;
-
-    my $player = $players->{$cid};
-    return unless $player;
-
-    return (
-        id    => $cid,
-    );
-}
-
-# Get info for all players
-#
-sub _players {
-    my ($self) = @_;
-
-    #return [] unless keys %$players;
-
-    return [map { { _player_info($_) } } keys %$players];
-}
-
 # Encode a data structure in JSON
 #
-sub _message_to_json {
-    my %message = @_;
+sub _to_json {
+    my ($perl_struct)  = @_;
 
     my $json = Mojo::JSON->new;
-    $json = $json->encode({%message});
+    $json = $json->encode($perl_struct);
     app->log->debug($json);
     return $json;
 }
 
-# Send a message
+# Send a message to everyone, (but can 'exclude' oneself)
 #
-sub _send_message {
-    my ($self, $msg) = @_;
+sub _broadcast {
+    my ($args) = @_;
 
-    $self->send(_message_to_json(%$msg));
-}
+    my $exclude = $args->{exclude};
+    my $json    = _to_json( $args->{msg} );
 
-# Send a message to everyone except oneself
-#
-sub _send_message_to_others {
-    my ($self, $msg) = @_;
+    CLIENT:
+    foreach my $cid (keys %$clients) {
+        my $client = $clients->{$cid};
+        next CLIENT if $exclude and $exclude == $client;
 
-    my $id = _id($self);
-
-    my $message = _message_to_json(%$msg);
-
-    foreach my $cid (keys %$players) {
-        next if $cid eq $id;
-
-        my $player = $players->{$cid};
-
-        # If player is connected
-        if ($player && $player->{tx}) {
-            $player->{tx}->send($message);
-        }
-
-        # Cleanup disconnected player
-        else {
-            delete $players->{$cid};
-        }
+        $client->tx->send($json);
     }
-}
-
-# Send a message to everyone, including oneself
-#
-sub _send_message_to_all {
-    my ($self, $msg) = @_;
-    _send_message_to_others($self, $msg);
-    _send_message($self, $msg);
 }
 
 print "Remember, you need to also run 'sudo perl mojo/examples/flash-policy-server.pl' as root for this to work...\n";
