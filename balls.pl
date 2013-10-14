@@ -29,11 +29,6 @@ $ioloop->recurring(1 => sub {
 });
 
 
-# get the HTML
-#
-get '/' => 'index';
-
-
 # The websocket URL. This tells us a new client has made a connection
 #
 websocket '/' => sub {
@@ -107,6 +102,11 @@ websocket '/' => sub {
         }
     );
 };
+
+# get the HTML
+#
+get '/' => 'index';
+
 
 # Encode a data structure in JSON
 #

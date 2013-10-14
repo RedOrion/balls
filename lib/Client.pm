@@ -18,4 +18,16 @@ has 'name' => (
     default     => 'bar',
 );
 
+# Return the client, as a hash
+#
+sub as_hash {
+    my ($self) = @_;
+
+    return {
+        id      => $self->id,
+        name    => $self->name,
+    };
+}
+
+
 __PACKAGE__->meta->make_immutable;

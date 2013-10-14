@@ -56,23 +56,24 @@
                 ws.onmessage = function(e) {
                     var data = $.evalJSON(e.data);
                     var type = data.type;
-alert(e.data);
+                    var content = data.data;
+//alert(e.data);
                     //console.log('Message received');
                     $('#debug').html(e.data);
 
                     if (type == 'new_client') {
                         //console.log('New player connected');
                         var player = new Player({
-                            "id" : data.id
+                            "id" : content.id
                         });
                         self.addPlayer(player);
                     }
                     else if (type == 'old_client') {
                         //console.log('Player disconnected');
-                        delete self.players[data.id];
+                        delete self.players[content.id];
                     }
                     else if (type == 'rooms') {
-                        $('#top').html("room data = ["+data[$('#room').val()]+"]");
+                        $('#top').html("room data = ["+content[$('#room').val()]+"]");
                     }
                 };
 
