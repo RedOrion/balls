@@ -57,7 +57,6 @@
                     var data = $.evalJSON(e.data);
                     var type = data.type;
                     var content = data.data;
-//alert(e.data);
                     //console.log('Message received');
                     $('#debug').html(e.data);
 

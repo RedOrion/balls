@@ -86,7 +86,7 @@ sub add_client {
             $self->broadcast({
                 type    => 'old_client',
                 data    => $client->as_hash,
-                exclue  => $client,
+                exclude  => $client,
             });
             delete $self->clients->{$client->id};
             $self->log->debug("Client [".$client->id."] disconnected.");
