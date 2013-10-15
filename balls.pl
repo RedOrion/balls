@@ -10,12 +10,12 @@ use Mojo::IOLoop;
 use Client;
 use WS::Root;
 
-# The websocket URL. This tells us a new client has made a connection
-#
 my $ws_root = WS::Root->new({
     log     => app->log,
 });
 
+# The websocket URL. This tells us a new client has made a connection
+#
 websocket '/' => sub {
     my ($self) = @_;
 
