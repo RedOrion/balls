@@ -53,7 +53,7 @@ __DATA__
         #canvas {
             background: #fff;
             border: 1px;
-            solid #cbcbcb;
+            solid : #cbcbcb;
         }
         -->
         </style>
@@ -64,24 +64,30 @@ var y=100;
 var dx=4;
 var dy=5;
 
+function Bouncer() {
+    var self = this;
+
+    this.render=function() {
+        context.clearRect(0, 0, 600, 600);
+        context.beginPath();
+        context.fillStyle="#000066";
+        context.arc(x,y,20,0,Math.PI*2,true);
+        context.closePath();
+        context.fill();
+        if ( x < 20 || x > 580) dx = -dx;
+        if ( y < 20 || y > 580) dy = -dy;
+        x += dx;
+        y += dy;
+        requestAnimationFrame(self.render);
+    }
+
+};
+
 function init() {
     context = canvas.getContext('2d');
-    setInterval(draw,10);
+    var bouncer = new Bouncer();
+    bouncer.render();
 }
-function draw() {
-    context.clearRect(0, 0, 600,600);
-    context.beginPath();
-    context.fillStyle="#000066";
-    context.arc(x,y,20,0,Math.PI*2,true);
-    context.closePath();
-    context.fill();
-
-    if ( x < 20 || x > 580) dx = -dx;
-    if ( y < 20 || y > 580) dy = -dy;
-    x += dx;
-    y += dy;
-}
-
 
 
         </script>
