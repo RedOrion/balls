@@ -45,53 +45,48 @@ __DATA__
     <head>
         <title>Balls Demo</title>
         <meta charset="utf-8" />
-        <script type="text/javascript" src="/jquery.min.js"></script>
-        <script type="text/javascript" src="/jquery.json.min.js"></script>
-        <script type="text/javascript" src="/balls.js"></script>
-        <script type="text/javascript">
-            // Only load the flash fallback when needed
-            if (!('WebSocket' in window)) {
-                document.write([
-                    '<scr'+'ipt type="text/javascript" src="/web-socket-js/swfobject.js"></scr'+'ipt>',
-                    '<scr'+'ipt type="text/javascript" src="/web-socket-js/FABridge.js"></scr'+'ipt>',
-                    '<scr'+'ipt type="text/javascript" src="/web-socket-js/web_socket.js"></scr'+'ipt>'
-                ].join(''));
-            }
-        </script>
         <style type="text/css">
-            html,body {
-                background-color: #333;
-                color: #fff;
-                font-family: helvetica, arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                font-size: 12pt;
-            }
-        
-            #canvas {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-            }
+        <!--
+        body {
+            background-color: #ededed;
+        }
+        #canvas {
+            background: #fff;
+            border: 1px;
+            solid #cbcbcb;
+        }
+        -->
         </style>
-        <script type="text/javascript" src="lib/impact/impact.js"></script>
-        <script type="text/javascript" src="lib/game/main.js"></script>
+        <script>
+var context;
+var x=400;
+var y=100;
+var dx=4;
+var dy=5;
 
-        <script type="text/javascript">
-            if (WebSocket.__initialize) {
-                // Set URL of your WebSocketMain.swf here:
-                WebSocket.__swfLocation = '/web-socket-js/WebSocketMain.swf';
-            }
+function init() {
+    context = canvas.getContext('2d');
+    setInterval(draw,10);
+}
+function draw() {
+    context.clearRect(0, 0, 600,600);
+    context.beginPath();
+    context.fillStyle="#000066";
+    context.arc(x,y,20,0,Math.PI*2,true);
+    context.closePath();
+    context.fill();
 
-            $(document).ready(function() {
-                $('#content').balls({"url":"<%= $url %>"});
-            });
+    if ( x < 20 || x > 580) dx = -dx;
+    if ( y < 20 || y > 580) dy = -dy;
+    x += dx;
+    y += dy;
+}
+
+
+
         </script>
     </head>
-    <body>
+    <body onLoad="init();">
         <div class="container">
             <table border="0" height="100%" style="margin:auto">
                 <tr>
@@ -105,7 +100,7 @@ __DATA__
                 </tr>
             </table>
         </div>
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" width="600" height="600"></canvas>
     </body>
 </html>
 
