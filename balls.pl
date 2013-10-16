@@ -59,10 +59,17 @@ __DATA__
         </style>
         <script>
 var context;
-var x=400;
-var y=100;
-var dx=4;
-var dy=5;
+
+var start_x = 60;
+var start_y = 60;
+var start_t = 2000;
+
+var end_x = 550;
+var end_y = 450;
+var end_t = 5000; // milliseconds 
+
+var date = new Date();
+var init_t;
 
 function Bouncer() {
     var self = this;
@@ -71,13 +78,22 @@ function Bouncer() {
         context.clearRect(0, 0, 600, 600);
         context.beginPath();
         context.fillStyle="#000066";
-        context.arc(x,y,20,0,Math.PI*2,true);
-        context.closePath();
-        context.fill();
-        if ( x < 20 || x > 580) dx = -dx;
-        if ( y < 20 || y > 580) dy = -dy;
-        x += dx;
-        y += dy;
+
+        var date = new Date();
+        var now_t = date.getTime() - init_t;
+        if (now_t < start_t || now_t > end_t) {
+            // Outside the period of the animation
+        }
+        else {
+            var prop = (now_t - start_t) / (end_t - start_t);
+
+            var x = Math.round(start_x + (end_x - start_x) * prop);
+            var y = Math.round(start_y + (end_y - start_y) * prop);
+
+            context.arc(x,y,20,0,Math.PI*2,true);
+            context.closePath();
+            context.fill();
+        }
         requestAnimationFrame(self.render);
     }
 
@@ -86,6 +102,8 @@ function Bouncer() {
 function init() {
     context = canvas.getContext('2d');
     var bouncer = new Bouncer();
+    init_t = date.getTime();
+
     bouncer.render();
 }
 
