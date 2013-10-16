@@ -91,7 +91,7 @@ function Ball(args) {
 
 
 function Bouncer(args) {
-    this.ball = args.ball;
+    this.balls = args.balls;
     var self = this;
 
     this.render=function() {
@@ -99,7 +99,9 @@ function Bouncer(args) {
         context.beginPath();
         context.fillStyle="#000066";
 
-        self.ball.render();
+        for (var i=0; i<self.balls.length; i++) {
+            self.balls[i].render();
+        }
         requestAnimationFrame(self.render);
     }
 
@@ -109,7 +111,9 @@ function init() {
     var canvas = document.getElementById("canvas");
     context = canvas.getContext('2d');
 
-    var ball = new Ball({
+    var balls = new Array();
+
+    balls[0] = new Ball({
         start_x : 60,
         start_y : 50,
         start_t : 2000,
@@ -117,9 +121,17 @@ function init() {
         end_y   : 450,
         end_t   : 10000
     });
+    balls[1] = new Ball({
+        start_x : 550,
+        start_y : 450,
+        start_t : 10000,
+        end_x   : 60,
+        end_y   : 50,
+        end_t   : 18000
+    });
 
     var bouncer = new Bouncer({
-        ball : ball    
+        balls : balls    
     });
     init_t = date.getTime();
 
