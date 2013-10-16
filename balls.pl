@@ -60,18 +60,38 @@ __DATA__
         <script>
 var context;
 
-var start_x = 60;
-var start_y = 60;
-var start_t = 2000;
-
-var end_x = 550;
-var end_y = 450;
-var end_t = 5000; // milliseconds 
-
 var date = new Date();
 var init_t;
 
-function Bouncer() {
+function Ball(args) {
+    this.start_x = args.start_x;
+    this.start_y = args.start_y;
+    this.start_t = args.start_t;
+    this.end_x   = args.end_x;
+    this.end_y   = args.end_y;
+    this.end_t   = args.end_t;
+    var self = this;
+
+    this.render=function() {
+        var date = new Date();
+        var now_t = date.getTime() - init_t;
+        if (now_t < self.start_t || now_t > self.end_t) {
+            // Object not in scope
+        }
+        else {
+            var prop = (now_t - self.start_t) / (self.end_t - self.start_t);
+            var x = Math.round(self.start_x + (self.end_x - self.start_x) * prop);
+            var y = Math.round(self.start_y + (self.end_y - self.start_y) * prop);
+            context.arc(x,y,20,0,Math.PI*2,true);
+            context.closePath();
+            context.fill();
+        }
+    }
+};
+
+
+function Bouncer(args) {
+    this.ball = args.ball;
     var self = this;
 
     this.render=function() {
@@ -79,29 +99,28 @@ function Bouncer() {
         context.beginPath();
         context.fillStyle="#000066";
 
-        var date = new Date();
-        var now_t = date.getTime() - init_t;
-        if (now_t < start_t || now_t > end_t) {
-            // Outside the period of the animation
-        }
-        else {
-            var prop = (now_t - start_t) / (end_t - start_t);
-
-            var x = Math.round(start_x + (end_x - start_x) * prop);
-            var y = Math.round(start_y + (end_y - start_y) * prop);
-
-            context.arc(x,y,20,0,Math.PI*2,true);
-            context.closePath();
-            context.fill();
-        }
+        self.ball.render();
         requestAnimationFrame(self.render);
     }
 
 };
 
 function init() {
+    var canvas = document.getElementById("canvas");
     context = canvas.getContext('2d');
-    var bouncer = new Bouncer();
+
+    var ball = new Ball({
+        start_x : 60,
+        start_y : 50,
+        start_t : 2000,
+        end_x   : 550,
+        end_y   : 450,
+        end_t   : 10000
+    });
+
+    var bouncer = new Bouncer({
+        ball : ball    
+    });
     init_t = date.getTime();
 
     bouncer.render();
