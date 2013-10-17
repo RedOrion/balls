@@ -129,6 +129,14 @@ function init() {
         end_y   : 50,
         end_t   : 18000
     });
+    balls[2] = new Ball({
+        start_x : 550,
+        start_y : 50,
+        start_t : 5000,
+        end_x   : 60,
+        end_y   : 50,
+        end_t   : 12000
+    });
 
     var bouncer = new Bouncer({
         balls : balls    
