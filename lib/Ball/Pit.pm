@@ -4,6 +4,7 @@ package Ball::Pit;
 
 use Moose;
 use namespace::autoclean;
+use Data::Dumper;
 
 has 'balls' => (
     is      => 'rw',
@@ -52,6 +53,7 @@ sub BUILD {
         });
         push @{$self->balls}, $ball;
     }
+    print STDERR Dumper($self->balls);
 
 }
 

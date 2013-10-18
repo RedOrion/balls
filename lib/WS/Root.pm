@@ -2,7 +2,7 @@ package WS::Root;
 
 use Moose;
 use Mojo::IOLoop;
-
+use Data::Dumper;
 use namespace::autoclean;
 
 extends "WS";
@@ -50,6 +50,8 @@ sub BUILD {
 #
 sub room {
     my ($self, $client, $data) = @_;
+
+print STDERR Dumper($data);
 
     my $room_number = $data->{number};
     my $room = $self->rooms->{$room_number};
