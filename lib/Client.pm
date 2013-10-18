@@ -6,6 +6,7 @@ use namespace::autoclean;
 has 'tx' => (
     is          => 'rw',
     required    => 1,
+    handles     => [qw(send)],
 );
 
 has 'id' => (

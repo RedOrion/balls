@@ -16,26 +16,40 @@ has 'clients' => (
     default     => sub { {} },
 );
 
+# Prepare a JSON message for transmission #
+sub prepare_json {
+    my ($self, $args) = @_;
+    
+    my $msg = {
+        type    => $args->{type},
+        data    => $args->{data},
+    };
+    return Mojo::JSON->new->encode($msg);
+}
+
+# Send a prepared JSON message to one client
+#
+sub send_json_to_client {
+    my ($self, $json, $client) = @_;
+
+    $client->send($json);
+}
+
 # Send a message to everyone, (but can 'exclude' oneself)
 #
 sub broadcast {
     my ($self, $args) = @_;
 
+    my $json = $self->prepare_json($args);
+
     my $exclude = $args->{exclude};
-    my $type    = $args->{type};
-    my $data    = $args->{data};
-    my $msg = {
-        type    => $args->{type},
-        data    => $args->{data},
-    };
-    my $json = Mojo::JSON->new->encode($msg);
 
     CLIENT:
     foreach my $cid (keys %{$self->clients}) {
         my $client = $self->clients->{$cid};
         next CLIENT if $exclude and $exclude == $client;
 
-        $client->tx->send($json);
+        $client->send($json);
     }
 }
 
@@ -74,24 +88,30 @@ sub add_client {
                 $self->log->debug("No method for type [$type]");
                 return;
             }
-            $self->$type($msg->{data});
+            # Call the 'method' specifed in the 'type'
+            $self->$type($client, $msg->{data});
         }
     );
 
     # In the event of a finish
     $connection->on(finish =>
         sub {
-            my ($this) = @_;
-
-            $self->broadcast({
-                type    => 'old_client',
-                data    => $client->as_hash,
-                exclude  => $client,
-            });
-            delete $self->clients->{$client->id};
-            $self->log->debug("Client [".$client->id."] disconnected.");
+            $self->finish($client);
         }
     );
 }
+
+sub finish {
+    my ($self, $client) = @_;
+
+    $self->broadcast({
+        type    => 'old_client',
+        data    => $client->as_hash,
+        exclude => $client,
+    });
+    delete $self->clients->{$client->id};
+    $self->log->debug("Client [".$client->id."] disconnected.");
+}
+
 
 __PACKAGE__->meta->make_immutable;
