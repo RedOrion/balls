@@ -66,9 +66,8 @@ sub BUILD {
         push @{$self->balls}, $ball;
     }
     # extend the time up to 10 seconds ahead
-    $self->update(30000);
+    $self->update(10000);
     print STDERR Dumper($self->balls);
-
 }
 
 # Update the pit by a number of seconds
