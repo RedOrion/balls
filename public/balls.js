@@ -14,7 +14,6 @@
 
             self.addPlayer = function(player) {
                 self.players[player.id] = player;
-//                alert("Add player "+player.id);
             };
 
             self.getPlayer = function(id) {

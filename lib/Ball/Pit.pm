@@ -7,22 +7,33 @@ use Ball::Quantum;
 use namespace::autoclean;
 use Data::Dumper;
 
+# An array of all the balls in the pit
+#
 has 'balls' => (
     is      => 'rw',
     isa     => 'ArrayRef[Ball::Quantum]',
     default => sub { [] },
 );
-
+# The height of the pit (in pixels)
+#
 has 'width' => (
     is      => 'rw',
     isa     => 'Int',
     default => 1000,
 );
-
+# The width of the pit (in pixels)
+#
 has 'height' => (
     is      => 'rw',
     isa     => 'Int',
     default => 1000,
+);
+# The 'time' (in seconds) from when the ball pit was created
+# 
+has 'time' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 0,
 );
 
 # Create a ball pit with random balls
@@ -54,9 +65,49 @@ sub BUILD {
         });
         push @{$self->balls}, $ball;
     }
+    # extend the time up to 10 seconds ahead
+    $self->update(30000);
     print STDERR Dumper($self->balls);
 
 }
+
+# Update the pit by a number of seconds
+#   Anything that finishes before the end time is re-computed
+#   anything that finishes before the start time can be deleted
+sub update {
+    my ($self, $duration) = @_;
+
+    # As a test, we just bounce the ball back to it's start, rather than compute collisions.
+    my @newballs;
+    my $end_time = $self->time + $duration;
+    foreach my $ball (@{$self->balls}) {
+        my $to_time     = $ball->end_time;
+        my $duration    = $to_time - $ball->start_time;
+        my $this_ball   = $ball;
+        while ($to_time <= $end_time) {
+            print STDERR "to_time=$to_time end_time=$end_time duration=$duration\n";
+            if ($to_time > $self->time) {
+                # The ball has not reached it's destination.
+                push @newballs, $this_ball;
+            }
+            my $new_ball = Ball::Quantum->new({
+                id          => $this_ball->id,
+                start_time  => $this_ball->end_time,
+                end_time    => $this_ball->end_time + $duration,
+                start_x     => $this_ball->end_x,
+                start_y     => $this_ball->end_y,
+                end_x       => $this_ball->start_x,
+                end_y       => $this_ball->start_y,
+            });
+            push @newballs, $new_ball;
+            $this_ball = $new_ball;
+            $to_time = $new_ball->end_time;
+        }
+    }
+    $self->balls(\@newballs);
+
+}
+
 
 # Create a hash representation of the object
 #

@@ -105,11 +105,12 @@ function Ball(args) {
     this.end_x   = args.end_x;
     this.end_y   = args.end_y;
     this.end_t   = args.end_t;
+    this.init_t  = args.init_t;
     var self = this;
 
     this.render=function() {
         var date = new Date();
-        var now_t = date.getTime() - init_t;
+        var now_t = date.getTime() - self.init_t;
         if (now_t < self.start_t || now_t > self.end_t) {
             // Object not in scope
         }
@@ -146,6 +147,8 @@ function init() {
     var canvas = document.getElementById("canvas");
     context = canvas.getContext('2d');
 
+    init_t = date.getTime();
+    
     var balls = new Array();
 
     balls[0] = new Ball({
@@ -154,7 +157,8 @@ function init() {
         start_t : 2000,
         end_x   : 550,
         end_y   : 450,
-        end_t   : 10000
+        end_t   : 10000,
+        init_t  : init_t
     });
     balls[1] = new Ball({
         start_x : 550,
@@ -162,7 +166,8 @@ function init() {
         start_t : 10000,
         end_x   : 60,
         end_y   : 50,
-        end_t   : 18000
+        end_t   : 18000,
+        init_t  : init_t
     });
     balls[2] = new Ball({
         start_x : 550,
@@ -170,13 +175,13 @@ function init() {
         start_t : 5000,
         end_x   : 60,
         end_y   : 50,
-        end_t   : 12000
+        end_t   : 12000,
+        init_t  : init_t
     });
 
     var bouncer = new Bouncer({
         balls : balls    
     });
-    init_t = date.getTime();
 
     bouncer.render();
 }
