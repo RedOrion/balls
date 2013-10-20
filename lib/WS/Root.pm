@@ -3,6 +3,9 @@ package WS::Root;
 use Moose;
 use Mojo::IOLoop;
 use Data::Dumper;
+use Room;
+use Ball::Pit;
+
 use namespace::autoclean;
 
 extends "WS";
@@ -19,29 +22,29 @@ sub BUILD {
     # every second, update the room states (compute the future state of the balls)
     #
     Mojo::IOLoop->singleton->recurring(1 => sub {
-        foreach my $room (keys %{$self->rooms}) {
+        foreach my $room_id (keys %{$self->rooms}) {
             # Update the state of the room to at least now + 5 seconds
             #
+            my $room = $self->rooms->{$room_id};
+            $self->log->debug("ROOM - $room_id [$room]");
             $room->update_state;
 
             # Send the room status to each of the subscribed clients
             #
-            my $json = $self->prepare_msg({
+            my $json = $self->prepare_json({
                 type    => 'room_data',
                 data    => $room->to_hash,
             });
-            foreach my $client (@{$room->subscribers}) {
+            $room->for_all_subscribers( sub {
+                my $client = shift;
                 $client->send($json);
-            }
-
+            });
         }
-        # For each room, send
-        # We should only send data for the room that the person is in!
-        $self->broadcast({
-            type    => 'rooms',
-            data    => 0,
-        });
-        $self->log->debug('Sending to all players');
+        # TODO: If there are no subscribers, close the room down?
+        #
+        #
+        #
+        #
     });
 }
 
