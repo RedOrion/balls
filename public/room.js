@@ -1,6 +1,6 @@
 (function($){
     $.fn.extend({
-        balls: function(o) {
+        room: function(o) {
             var self    = this;
 
             self.playerId = null;

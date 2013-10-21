@@ -47,7 +47,7 @@ __DATA__
         <meta charset="utf-8" />
         <script type="text/javascript" src="/jquery.min.js"></script>
         <script type="text/javascript" src="/jquery.json.min.js"></script>
-        <script type="text/javascript" src="/balls.js"></script>
+        <script type="text/javascript" src="/room.js"></script>
 
         <style type="text/css">
         <!--
@@ -88,7 +88,7 @@ __DATA__
 }())
 
 $(document).ready(function() {
-    $('#content').balls({"url" : "<%= $url %>"});
+    $('#content').room({"url" : "<%= $url %>"});
 });
 
 
