@@ -73,6 +73,30 @@
                     else if (type == 'rooms') {
                         $('#top').html("room data = ["+content[$('#room').val()]+"]");
                     }
+                    else if (type == 'room_data') {
+                        init_t = date.getTime();
+                        var c_ball_pit = content.ballpit;
+                        var c_balls = c_ball_pit.balls;
+                        var balls = new Array();
+                        for (var i=0; i<c_balls.length; i++) {
+                            var c_ball = c_balls[i];
+                            balls[i] = new Ball({
+                                start_x : c_ball.start_x,
+                                start_y : c_ball.start_y,
+                                start_t : c_ball.start_t,
+                                end_x   : c_ball.end_x,
+                                end_y   : c_ball.end_y,
+                                end_t   : c_ball.end_t,
+                                init_t  : init_t
+                            });
+                        }
+                        var bouncer = new Bouncer({
+                            balls   : balls,
+                            width   : 1000,
+                            height  : 1000
+                        });
+                        bouncer.render();
+                    }
                 };
 
                 ws.onclose = function() {

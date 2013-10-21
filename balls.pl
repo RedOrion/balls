@@ -127,11 +127,13 @@ function Ball(args) {
 
 
 function Bouncer(args) {
-    this.balls = args.balls;
+    this.balls  = args.balls;
+    this.width  = args.width;
+    this.height = args.height;
     var self = this;
 
     this.render=function() {
-        context.clearRect(0, 0, 600, 600);
+        context.clearRect(0, 0, self.width, self.height);
         context.beginPath();
         context.fillStyle="#000066";
 
@@ -180,7 +182,9 @@ function init() {
     });
 
     var bouncer = new Bouncer({
-        balls : balls    
+        balls : balls,
+        width   : 1000,
+        height  : 1000
     });
 
     bouncer.render();
@@ -189,7 +193,7 @@ function init() {
 
         </script>
     </head>
-    <body onLoad="init();">
+    <body>
         <div class="container">
             <table border="0" height="100%" style="margin:auto">
                 <tr>
@@ -203,7 +207,7 @@ function init() {
                 </tr>
             </table>
         </div>
-        <canvas id="canvas" width="600" height="600"></canvas>
+        <canvas id="canvas" width="1000" height="1000"></canvas>
     </body>
 </html>
 
