@@ -22,10 +22,11 @@ has 'ball_pit' => (
     required    => 1,
 );
 
-# Update the state of the room to at least time now + $to_time
+# Update the state of the room for a further $duration period
 sub update_state {
-    my ($self, $to_time) = @_;
+    my ($self, $duration) = @_;
 
+    $self->ball_pit->update($duration);
 }
 
 # Unsubscribe a client from this room

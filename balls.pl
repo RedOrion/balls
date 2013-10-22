@@ -89,6 +89,8 @@ __DATA__
 
 $(document).ready(function() {
     $('#content').room({"url" : "<%= $url %>"});
+    var canvas = document.getElementById("canvas");
+    context = canvas.getContext('2d');
 });
 
 
@@ -96,7 +98,7 @@ $(document).ready(function() {
 var context;
 
 var date = new Date();
-var init_t;
+var init_t = -1;
 
 function Ball(args) {
     this.start_x = args.start_x;
@@ -145,50 +147,6 @@ function Bouncer(args) {
 
 };
 
-function init() {
-    var canvas = document.getElementById("canvas");
-    context = canvas.getContext('2d');
-
-    init_t = date.getTime();
-    
-    var balls = new Array();
-
-    balls[0] = new Ball({
-        start_x : 60,
-        start_y : 50,
-        start_t : 2000,
-        end_x   : 550,
-        end_y   : 450,
-        end_t   : 10000,
-        init_t  : init_t
-    });
-    balls[1] = new Ball({
-        start_x : 550,
-        start_y : 450,
-        start_t : 10000,
-        end_x   : 60,
-        end_y   : 50,
-        end_t   : 18000,
-        init_t  : init_t
-    });
-    balls[2] = new Ball({
-        start_x : 550,
-        start_y : 50,
-        start_t : 5000,
-        end_x   : 60,
-        end_y   : 50,
-        end_t   : 12000,
-        init_t  : init_t
-    });
-
-    var bouncer = new Bouncer({
-        balls : balls,
-        width   : 1000,
-        height  : 1000
-    });
-
-    bouncer.render();
-}
 
 
         </script>

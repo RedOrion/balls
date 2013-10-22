@@ -30,10 +30,22 @@ has 'height' => (
 );
 # The 'time' (in seconds) from when the ball pit was created
 # 
-has 'time' => (
+has 'start_time' => (
     is      => 'rw',
     isa     => 'Int',
-    default => 0,
+    default => -1,
+);
+has 'end_time' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => -1,
+);
+# The duration (in milliseconds) from each calculation
+#
+has 'duration' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 1000,
 );
 
 # Create a ball pit with random balls
@@ -46,7 +58,7 @@ sub BUILD {
         # somewhere in the centre
         my $start_x = rand($self->width - 400) + 200;
         my $start_y = rand($self->height - 400) + 200;
-        my $duration = rand(10000) + 5000;              # 5 to 10 seconds
+        my $duration = rand($self->duration) + $self->duration / 2;              # 5 to 10 seconds
         my $end_x = rand($self->width * 3) - $self->width;
         $end_x = $radius if ($end_x < $radius);
         $end_x = $self->width - $radius if $end_x > ($self->width - $radius);
@@ -66,7 +78,7 @@ sub BUILD {
         push @{$self->balls}, $ball;
     }
     # extend the time up to 10 seconds ahead
-    $self->update(10000);
+    $self->update($self->duration);
     print STDERR Dumper($self->balls);
 }
 
@@ -78,14 +90,31 @@ sub update {
 
     # As a test, we just bounce the ball back to it's start, rather than compute collisions.
     my @newballs;
-    my $end_time = $self->time + $duration;
+    my $start_time;
+    my $end_time;
+    if ($self->start_time < 0) {
+        # then this is the first time.
+        $start_time = 0;
+        $end_time   = $start_time + $duration;
+    }
+    else {
+        $start_time = $self->start_time + $duration;
+        $end_time   = $self->end_time + $duration;
+    }
+    print STDERR "start time = $start_time,    end_time = $end_time\n";
+    BALL:
     foreach my $ball (@{$self->balls}) {
+        if ($ball->end_time < $start_time) {
+            print STDERR "BEFORE: ball->start_time=".$ball->start_time." start_time=$start_time\n";
+            next BALL;
+        }
+       
         my $to_time     = $ball->end_time;
         my $duration    = $to_time - $ball->start_time;
         my $this_ball   = $ball;
         while ($to_time <= $end_time) {
             print STDERR "to_time=$to_time end_time=$end_time duration=$duration\n";
-            if ($to_time > $self->time) {
+            if ($to_time > $start_time) {
                 # The ball has not reached it's destination.
                 push @newballs, $this_ball;
             }
@@ -97,14 +126,15 @@ sub update {
                 start_y     => $this_ball->end_y,
                 end_x       => $this_ball->start_x,
                 end_y       => $this_ball->start_y,
-            });
+                });
             push @newballs, $new_ball;
             $this_ball = $new_ball;
             $to_time = $new_ball->end_time;
         }
     }
+    $self->start_time($start_time);
+    $self->end_time($end_time);
     $self->balls(\@newballs);
-
 }
 
 
@@ -119,7 +149,8 @@ sub to_hash {
     }
     return {
         width   => $self->width,
-        height  => $self->height,
+                height  => $self->height,
+                time    => $self->start_time,
         balls   => \@balls_quantum_ref,
     };
 }

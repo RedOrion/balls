@@ -27,7 +27,7 @@ sub BUILD {
             #
             my $room = $self->rooms->{$room_id};
             $self->log->debug("ROOM - $room_id [$room]");
-            $room->update_state;
+            $room->update_state(1000);
 
             # Send the room status to each of the subscribed clients
             #

@@ -74,7 +74,12 @@
                         $('#top').html("room data = ["+content[$('#room').val()]+"]");
                     }
                     else if (type == 'room_data') {
-                        init_t = date.getTime();
+                        if (init_t < 0) {
+                            init_t = date.getTime();
+                        }
+                        else {
+                            
+                        }
                         var c_ball_pit = content.ballpit;
                         var c_balls = c_ball_pit.balls;
                         var balls = new Array();
@@ -83,10 +88,10 @@
                             balls[i] = new Ball({
                                 start_x : c_ball.start_x,
                                 start_y : c_ball.start_y,
-                                start_t : c_ball.start_t,
+                                start_t : c_ball.start_time,
                                 end_x   : c_ball.end_x,
                                 end_y   : c_ball.end_y,
-                                end_t   : c_ball.end_t,
+                                end_t   : c_ball.end_time,
                                 init_t  : init_t
                             });
                         }
