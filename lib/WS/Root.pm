@@ -54,8 +54,6 @@ sub BUILD {
 sub room {
     my ($self, $client, $data) = @_;
 
-print STDERR Dumper($data);
-
     my $room_number = $data->{number};
     my $room = $self->rooms->{$room_number};
     if (not defined $room) {

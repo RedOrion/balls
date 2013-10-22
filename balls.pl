@@ -152,6 +152,7 @@ function Bouncer(args) {
         </script>
     </head>
     <body>
+        <canvas id="canvas" width="1000" height="1000"></canvas>
         <div class="container">
             <table border="0" height="100%" style="margin:auto">
                 <tr>
@@ -165,7 +166,6 @@ function Bouncer(args) {
                 </tr>
             </table>
         </div>
-        <canvas id="canvas" width="1000" height="1000"></canvas>
     </body>
 </html>
 

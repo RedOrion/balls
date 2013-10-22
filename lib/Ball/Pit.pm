@@ -53,12 +53,13 @@ has 'duration' => (
 sub BUILD {
     my ($self) = @_;
 
+    my @balls;
     for (my $i=0; $i < 10; $i++) {
         my $radius = int(rand(10)+10);
         # somewhere in the centre
         my $start_x = rand($self->width - 400) + 200;
         my $start_y = rand($self->height - 400) + 200;
-        my $duration = rand($self->duration) + $self->duration / 2;              # 5 to 10 seconds
+        my $duration = rand(10000) + 5000;              # 5 to 10 seconds
         my $end_x = rand($self->width * 3) - $self->width;
         $end_x = $radius if ($end_x < $radius);
         $end_x = $self->width - $radius if $end_x > ($self->width - $radius);
@@ -68,18 +69,20 @@ sub BUILD {
 
         my $ball = Ball::Quantum->new({
             id          => $i,
-            start_time  => 0,
+            start_time  => 1,
             end_time    => $duration,
             start_x     => $start_x,
             start_y     => $start_y,
             end_x       => $end_x,
             end_y       => $end_y,
         });
-        push @{$self->balls}, $ball;
+        print STDERR "### $i ###\n";
+        push @balls, $ball;
     }
-    # extend the time up to 10 seconds ahead
+    $self->balls(\@balls);
+    # extend the time up to 1 second ahead
+    print STDERR "#########\n". Dumper($self->balls);
     $self->update($self->duration);
-    print STDERR Dumper($self->balls);
 }
 
 # Update the pit by a number of seconds

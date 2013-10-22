@@ -74,13 +74,10 @@
                         $('#top').html("room data = ["+content[$('#room').val()]+"]");
                     }
                     else if (type == 'room_data') {
-                        if (init_t < 0) {
-                            init_t = date.getTime();
-                        }
-                        else {
-                            
-                        }
                         var c_ball_pit = content.ballpit;
+                        var date = new Date();
+                        init_t = date.getTime() - c_ball_pit.time;
+
                         var c_balls = c_ball_pit.balls;
                         var balls = new Array();
                         for (var i=0; i<c_balls.length; i++) {
