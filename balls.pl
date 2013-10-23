@@ -136,7 +136,7 @@ function Ball(args) {
             context.save();
             context.translate(x,y);
             context.rotate(rotate);
-            context.drawImage(imageObj, 0, 0);
+            context.drawImage(imageObj, -25, -35);
             context.restore();
         }
     }
