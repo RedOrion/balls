@@ -95,13 +95,17 @@ $(document).ready(function() {
     imageObj.onLoad = function() {
 //        context.drawImage(imageObj, 50,50);
     };
-    imageObj.src = 'http://178.79.150.173:3000/blue_ball.png';
+    imageObj.src = 'http://178.79.150.173:3000/sp_ship.png';
+    bgImage = new Image();
+    bgImage.src = 'http://178.79.150.173:3000/starfield.png';
+    bgImage.onLoad = function() {};
 });
 
 
 
 var context;
 var imageObj;
+var bgImage;
 var date = new Date();
 var init_t = -1;
 
@@ -126,9 +130,6 @@ function Ball(args) {
             var x = Math.round(self.start_x + (self.end_x - self.start_x) * prop);
             var y = Math.round(self.start_y + (self.end_y - self.start_y) * prop);
             context.drawImage(imageObj, x, y);
-//            context.arc(x,y,5,0,Math.PI*2,true);
-//            context.closePath();
-//            context.fill();
         }
     }
 };
@@ -145,6 +146,8 @@ function Bouncer(args) {
         //var now_t = date.getTime() - init_t;
 
         context.clearRect(0, 0, self.width, self.height);
+        context.drawImage(bgImage,0,0);
+
         context.beginPath();
         context.fillStyle="#000066";
 
