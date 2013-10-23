@@ -57,7 +57,7 @@
                     var type = data.type;
                     var content = data.data;
                     //console.log('Message received');
-                    $('#debug').html(e.data);
+//                    $('#debug').html(e.data);
 
                     if (type == 'new_client') {
                         //console.log('New player connected');
@@ -107,7 +107,7 @@
                 };
 
                 $('#room').keyup(function() {
-                    $('#debug').html('room change');
+        //            $('#debug').html('room change');
                     ws.send($.toJSON({"type" : "room", "data" : { "number" : $('#room').val() } } ));
                 });
 

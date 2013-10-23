@@ -91,12 +91,17 @@ $(document).ready(function() {
     $('#content').room({"url" : "<%= $url %>"});
     var canvas = document.getElementById("canvas");
     context = canvas.getContext('2d');
+    imageObj = new Image();
+    imageObj.onLoad = function() {
+//        context.drawImage(imageObj, 50,50);
+    };
+    imageObj.src = 'http://178.79.150.173:3000/blue_ball.png';
 });
 
 
 
 var context;
-
+var imageObj;
 var date = new Date();
 var init_t = -1;
 
@@ -120,9 +125,10 @@ function Ball(args) {
             var prop = (now_t - self.start_t) / (self.end_t - self.start_t);
             var x = Math.round(self.start_x + (self.end_x - self.start_x) * prop);
             var y = Math.round(self.start_y + (self.end_y - self.start_y) * prop);
-            context.arc(x,y,20,0,Math.PI*2,true);
-            context.closePath();
-            context.fill();
+            context.drawImage(imageObj, x, y);
+//            context.arc(x,y,5,0,Math.PI*2,true);
+//            context.closePath();
+//            context.fill();
         }
     }
 };
@@ -135,6 +141,9 @@ function Bouncer(args) {
     var self = this;
 
     this.render=function() {
+        //var date = new Date();
+        //var now_t = date.getTime() - init_t;
+
         context.clearRect(0, 0, self.width, self.height);
         context.beginPath();
         context.fillStyle="#000066";

@@ -45,7 +45,7 @@ has 'end_time' => (
 has 'duration' => (
     is      => 'rw',
     isa     => 'Int',
-    default => 1000,
+    default => 2000,
 );
 
 # Create a ball pit with random balls
@@ -54,12 +54,12 @@ sub BUILD {
     my ($self) = @_;
 
     my @balls;
-    for (my $i=0; $i < 10; $i++) {
+    for (my $i=0; $i < 100; $i++) {
         my $radius = int(rand(10)+10);
         # somewhere in the centre
         my $start_x = rand($self->width - 400) + 200;
         my $start_y = rand($self->height - 400) + 200;
-        my $duration = rand(10000) + 5000;              # 5 to 10 seconds
+        my $duration = rand(30000) + 15000;              # 5 to 10 seconds
         my $end_x = rand($self->width * 3) - $self->width;
         $end_x = $radius if ($end_x < $radius);
         $end_x = $self->width - $radius if $end_x > ($self->width - $radius);
@@ -70,11 +70,11 @@ sub BUILD {
         my $ball = Ball::Quantum->new({
             id          => $i,
             start_time  => 1,
-            end_time    => $duration,
-            start_x     => $start_x,
-            start_y     => $start_y,
-            end_x       => $end_x,
-            end_y       => $end_y,
+            end_time    => int($duration),
+            start_x     => int($start_x),
+            start_y     => int($start_y),
+            end_x       => int($end_x),
+            end_y       => int($end_y),
         });
         print STDERR "### $i ###\n";
         push @balls, $ball;
@@ -104,36 +104,33 @@ sub update {
         $start_time = $self->start_time + $duration;
         $end_time   = $self->end_time + $duration;
     }
-    print STDERR "start time = $start_time,    end_time = $end_time\n";
+    print STDERR "FROM $start_time TO $end_time\n";
     BALL:
     foreach my $ball (@{$self->balls}) {
-        if ($ball->end_time < $start_time) {
-            print STDERR "BEFORE: ball->start_time=".$ball->start_time." start_time=$start_time\n";
+        print STDERR "BALL ".$ball->start_time." to ".$ball->end_time." ";
+        if ($ball->end_time <= $start_time) {
+            print STDERR " ERASED\n";
             next BALL;
         }
        
-        my $to_time     = $ball->end_time;
-        my $duration    = $to_time - $ball->start_time;
-        my $this_ball   = $ball;
-        while ($to_time <= $end_time) {
-            print STDERR "to_time=$to_time end_time=$end_time duration=$duration\n";
-            if ($to_time > $start_time) {
-                # The ball has not reached it's destination.
-                push @newballs, $this_ball;
-            }
+        my $ball_duration = $ball->end_time - $ball->start_time;
+        print STDERR "\n";
+    
+        while ($ball->end_time <= $end_time) {
+            push @newballs, $ball;
             my $new_ball = Ball::Quantum->new({
-                id          => $this_ball->id,
-                start_time  => $this_ball->end_time,
-                end_time    => $this_ball->end_time + $duration,
-                start_x     => $this_ball->end_x,
-                start_y     => $this_ball->end_y,
-                end_x       => $this_ball->start_x,
-                end_y       => $this_ball->start_y,
-                });
-            push @newballs, $new_ball;
-            $this_ball = $new_ball;
-            $to_time = $new_ball->end_time;
+                id          => $ball->id,
+                start_time  => int($ball->end_time),
+                end_time    => int($ball->end_time + $ball_duration),
+                start_x     => int($ball->end_x),
+                start_y     => int($ball->end_y),
+                end_x       => int($ball->start_x),
+                end_y       => int($ball->start_y),
+            });
+            $ball = $new_ball;
+            print STDERR "ADD  ".$ball->start_time." to ".$ball->end_time."\n";
         }
+        push @newballs, $ball;
     }
     $self->start_time($start_time);
     $self->end_time($end_time);

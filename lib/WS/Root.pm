@@ -21,13 +21,13 @@ sub BUILD {
 
     # every second, update the room states (compute the future state of the balls)
     #
-    Mojo::IOLoop->singleton->recurring(1 => sub {
+    Mojo::IOLoop->singleton->recurring(2 => sub {
         foreach my $room_id (keys %{$self->rooms}) {
             # Update the state of the room to at least now + 5 seconds
             #
             my $room = $self->rooms->{$room_id};
             $self->log->debug("ROOM - $room_id [$room]");
-            $room->update_state(1000);
+            $room->update_state(2000);
 
             # Send the room status to each of the subscribed clients
             #
