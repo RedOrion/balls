@@ -129,7 +129,15 @@ function Ball(args) {
             var prop = (now_t - self.start_t) / (self.end_t - self.start_t);
             var x = Math.round(self.start_x + (self.end_x - self.start_x) * prop);
             var y = Math.round(self.start_y + (self.end_y - self.start_y) * prop);
-            context.drawImage(imageObj, x, y);
+            var deltaY = self.end_y - self.start_y;
+            var deltaX = self.end_x - self.start_x
+
+            var rotate = Math.atan2(deltaY, deltaX) + Math.PI /2;
+            context.save();
+            context.translate(x,y);
+            context.rotate(rotate);
+            context.drawImage(imageObj, 0, 0);
+            context.restore();
         }
     }
 };
